@@ -1,0 +1,819 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>👊 KOF 格斗经理</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#0a0a14;--card:#141428;--border:#2a2a44;--gold:#ffd700;--shard:#00bfff}
+body{font-family:"Microsoft YaHei","PingFang SC",sans-serif;background:var(--bg);color:#ddd;min-height:100vh;font-size:13px}
+.container{max-width:1100px;margin:0 auto;padding:15px}
+.header{text-align:center;padding:20px 0;border-bottom:2px solid #ff4444;margin-bottom:15px}
+.header h1{font-size:28px;color:#ff4444;text-shadow:0 0 20px rgba(255,68,68,.5)}
+.header .sub{color:#888;font-size:12px;margin-top:5px}
+.sbar{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:15px}
+.sbox{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:12px;text-align:center}
+.sbox .lb{font-size:11px;color:#777}.sbox .vl{font-size:18px;font-weight:700;margin-top:3px}
+.sbox.gold .vl{color:var(--gold)}.sbox.shard .vl{color:var(--shard)}.sbox.lg .vl{color:#2ecc71}.sbox.vl .vl{color:#9b59b6}
+.nav{display:flex;gap:8px;margin-bottom:15px;overflow-x:auto;flex-wrap:wrap}
+.nb{flex:1;min-width:60px;padding:10px 8px;text-align:center;background:var(--card);border:1px solid var(--border);border-radius:6px;color:#888;cursor:pointer;font-size:12px;transition:.2s;white-space:nowrap}
+.nb:hover{background:#1e1e30;border-color:#ff4444}.nb.ac{background:#ff4444;color:#fff;border-color:#ff4444}
+.pnl{display:none}.pnl.ac{display:block}
+.rb8{background:#555}.rb9{background:#777}.rb10{background:#aaa}.rb11{background:#2ecc71}.rb12{background:#3498db}.rb13{background:#9b59b6}.rb14{background:#e67e22}.rb15{background:#ffd700}
+.btn{display:inline-block;padding:8px 16px;border:none;border-radius:6px;cursor:pointer;font-size:12px;font-weight:700;transition:.2s;color:#fff}
+.btn:hover{transform:translateY(-1px);filter:brightness(1.1)}.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.bp{background:linear-gradient(135deg,#ff4444,#cc0000)}.bs{background:linear-gradient(135deg,#4444ff,#2222cc)}
+.bg{background:linear-gradient(135deg,#ffd700,#ff8c00);color:#000}.bpu{background:linear-gradient(135deg,#a855f7,#7c3aed)}
+.bgr{background:linear-gradient(135deg,#22c55e,#16a34a)}.bo{background:transparent;border:1px solid var(--border);color:#aaa}
+.bsm{padding:5px 10px;font-size:11px}.bblk{display:block;width:100%;text-align:center}
+.fc{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:10px;margin:6px 0;display:flex;align-items:center;gap:10px;cursor:pointer;transition:.2s}
+.fc:hover{border-color:#ff4444;transform:translateX(3px)}
+.fc .f-icon{font-size:28px;width:45px;text-align:center}.fc .f-info{flex:1}
+.fc .f-name{font-weight:700;font-size:13px}.fc .f-stats{font-size:10px;color:#888;margin-top:3px}
+.pb{height:6px;background:#222;border-radius:3px;overflow:hidden;margin-top:5px}
+.pbf{height:100%;border-radius:3px;transition:width .3s}
+.clog{background:#0d0d1a;border:1px solid var(--border);border-radius:8px;padding:10px;margin:8px 0;max-height:180px;overflow-y:auto;font-size:11px;line-height:1.6}
+.clog .dmg{color:#ff6b6b}.clog.loot{color:#ffd700}.clog.win{color:#2ecc71;font-weight:700}.clog.lose{color:#e74c3c;font-weight:700}
+.modal-o{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,.85);display:none;align-items:center;justify-content:center;z-index:100}
+.modal-o.show{display:flex}.modal{background:var(--card);border:2px solid #ff4444;border-radius:12px;padding:20px;max-width:450px;width:92%;text-align:center;max-height:80vh;overflow-y:auto}
+.modal h3{color:#ff4444;margin-bottom:10px;font-size:16px}
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:#111}::-webkit-scrollbar-thumb{background:#444;border-radius:2px}
+.star-bar{display:flex;gap:2px;margin-top:5px}.star{width:12px;height:12px;background:#333;border-radius:2px}.star.active{background:#ffd700}
+.quality-badge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:10px;font-weight:700;margin-left:5px}
+.team-slot{background:var(--card);border:1px solid var(--border);border-radius:8px;padding:8px;margin:5px 0;display:flex;align-items:center;gap:8px}
+.team-slot .slot-num{width:25px;height:25px;background:#333;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px}
+.team-slot .fighter-mini{flex:1;display:flex;align-items:center;gap:6px}
+.team-slot .fighter-mini .icon{font-size:20px}
+.team-slot .fighter-mini .info{flex:1}
+.team-slot .fighter-mini .name{font-size:11px;font-weight:700}
+.team-slot .fighter-mini .stats{font-size:9px;color:#888}
+.tournament-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:12px;margin:8px 0}
+.tournament-card .title{font-size:14px;font-weight:700;color:#ff4444;margin-bottom:5px}
+.tournament-card .desc{font-size:11px;color:#888;margin-bottom:8px}
+.tournament-card .reward{font-size:11px;color:#ffd700;margin-bottom:8px}
+.tournament-card .progress{font-size:11px;color:#888}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+<h1>👊 KOF 格斗经理</h1>
+<div class="sub">收集格斗家 · 升星培养 · 称霸格斗界</div>
+</div>
+
+<div class="sbar">
+<div class="sbox gold"><div class="lb">金币</div><div class="vl" id="gold">5000</div></div>
+<div class="sbox shard"><div class="lb">万能碎片</div><div class="vl" id="shard">200</div></div>
+<div class="sbox lg"><div class="lb">体力</div><div class="vl" id="energy">100/100</div></div>
+<div class="sbox vl"><div class="lb">VIP</div><div class="vl" id="vip">0</div></div>
+</div>
+
+<div class="nav">
+<div class="nb ac" data-p="home">🏠 首页</div>
+<div class="nb" data-p="fighters">👥 格斗家</div>
+<div class="nb" data-p="team">🎯 战队</div>
+<div class="nb" data-p="battle">⚔️ 战斗</div>
+<div class="nb" data-p="tournament">🏆 赛事</div>
+<div class="nb" data-p="summon">🔮 召唤</div>
+</div>
+
+<!-- 首页 -->
+<div class="pnl ac" id="pnl-home">
+<div class="tournament-card">
+<div class="title">📊 今日概览</div>
+<div class="desc">格斗家总数：<span id="home-fighter-count" style="color:#ffd700">0</span> | 平均战力：<span id="home-avg-power" style="color:#2ecc71">0</span></div>
+<div class="progress">最强格斗家：<span id="home-best-fighter" style="color:#ff4444">-</span></div>
+</div>
+<div class="tournament-card">
+<div class="title">🎁 每日签到</div>
+<div class="desc">每日登录领取奖励</div>
+<button class="btn bgr bsm" id="btn-daily" onclick="dailyCheck()">签到</button>
+</div>
+</div>
+
+<!-- 格斗家列表 -->
+<div class="pnl" id="pnl-fighters">
+<div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+<button class="btn bo bsm" onclick="filterQuality('all')">全部</button>
+<button class="btn rb8 bsm" onclick="filterQuality(8)">8 资质</button>
+<button class="btn rb9 bsm" onclick="filterQuality(9)">9 资质</button>
+<button class="btn rb10 bsm" onclick="filterQuality(10)">10 资质</button>
+<button class="btn rb11 bsm" onclick="filterQuality(11)">11 资质</button>
+<button class="btn rb12 bsm" onclick="filterQuality(12)">12 资质</button>
+<button class="btn rb13 bsm" onclick="filterQuality(13)">13 资质</button>
+<button class="btn rb14 bsm" onclick="filterQuality(14)">14 资质</button>
+<button class="btn rb15 bsm" onclick="filterQuality(15)">15 资质</button>
+</div>
+<div id="fighters-list"></div>
+</div>
+
+<!-- 战队 -->
+<div class="pnl" id="pnl-team">
+<div class="tournament-card">
+<div class="title">🎯 出战阵容 (最多 6 人)</div>
+<div id="team-slots"></div>
+</div>
+<div class="tournament-card">
+<div class="title">📊 战队总战力</div>
+<div style="font-size:24px;color:#ff4444;font-weight:700" id="team-total-power">0</div>
+</div>
+</div>
+
+<!-- 战斗 -->
+<div class="pnl" id="pnl-battle">
+<div class="fc" onclick="startBattle(1)">
+<div class="f-icon">👊</div>
+<div class="f-info">
+<div class="f-name">普通擂台</div>
+<div class="f-stats">消耗 5 体力 | 奖励 100 金币 + 10 碎片</div>
+</div>
+<button class="btn bp bsm">挑战</button>
+</div>
+<div class="fc" onclick="startBattle(2)">
+<div class="f-icon">💀</div>
+<div class="f-info">
+<div class="f-name">精英擂台</div>
+<div class="f-stats">消耗 10 体力 | 奖励 250 金币 + 25 碎片</div>
+</div>
+<button class="btn bp bsm">挑战</button>
+</div>
+<div class="fc" onclick="startBattle(3)">
+<div class="f-icon">👹</div>
+<div class="f-info">
+<div class="f-name">宗师擂台</div>
+<div class="f-stats">消耗 20 体力 | 奖励 600 金币 + 60 碎片</div>
+</div>
+<button class="btn bp bsm">挑战</button>
+</div>
+<div class="clog" id="battle-log">
+<div class="win">欢迎来到 KOF 格斗经理！组建你的最强战队吧！</div>
+</div>
+</div>
+
+<!-- 赛事 -->
+<div class="pnl" id="pnl-tournament">
+<div class="tournament-card">
+<div class="title">🏆 街头争霸赛</div>
+<div class="desc">参与街头格斗，积累声望</div>
+<div class="reward">奖励：声望值 + 金币</div>
+<div class="progress">进度：0/10 场</div>
+<button class="btn bp bsm" style="margin-top:8px" onclick="tournamentFight('street')">参赛</button>
+</div>
+<div class="tournament-card">
+<div class="title">🌟 全国大赛</div>
+<div class="desc">全国范围的格斗赛事</div>
+<div class="reward">奖励：大量金币 + 稀有碎片</div>
+<div class="progress">进度：0/5 场</div>
+<button class="btn bp bsm" style="margin-top:8px" onclick="tournamentFight('national')">参赛</button>
+</div>
+<div class="tournament-card">
+<div class="title">👑 KOF 世界大赛</div>
+<div class="desc">世界最高水平的格斗赛事</div>
+<div class="reward">奖励：传说格斗家碎片 + 大量资源</div>
+<div class="progress">进度：0/3 场</div>
+<button class="btn bp bsm" style="margin-top:8px" onclick="tournamentFight('world')">参赛</button>
+</div>
+</div>
+
+<!-- 召唤 -->
+<div class="pnl" id="pnl-summon">
+<div class="modal-o" id="summon-modal">
+<div class="modal">
+<h3 id="summon-title">🎉 召唤成功！</h3>
+<div id="summon-result" style="font-size:14px;margin:15px 0"></div>
+<button class="btn bo" onclick="closeSummon()">关闭</button>
+</div>
+</div>
+
+<div style="text-align:center;padding:30px 10px">
+<div style="font-size:60px;margin-bottom:15px">🔮</div>
+<p style="color:#888;font-size:12px;margin-bottom:20px">消耗金币召唤格斗家</p>
+<button class="btn bp" onclick="summon(1)">单次召唤 (500 金币)</button>
+<button class="btn bg" onclick="summon(10)">十连召唤 (5000 金币)</button>
+<div style="margin-top:20px;padding:15px;background:var(--card);border-radius:8px;text-align:left">
+<div style="font-size:12px;color:#888;margin-bottom:8px">📋 召唤概率：</div>
+<div style="font-size:11px;line-height:1.8">
+<span class="rb15" style="padding:2px 6px;border-radius:4px">15 资质</span> 1%<br>
+<span class="rb14" style="padding:2px 6px;border-radius:4px">14 资质</span> 3%<br>
+<span class="rb13" style="padding:2px 6px;border-radius:4px">13 资质</span> 6%<br>
+<span class="rb12" style="padding:2px 6px;border-radius:4px">12 资质</span> 10%<br>
+<span class="rb11" style="padding:2px 6px;border-radius:4px">11 资质</span> 15%<br>
+<span class="rb10" style="padding:2px 6px;border-radius:4px">10 资质</span> 20%<br>
+<span class="rb9" style="padding:2px 6px;border-radius:4px">9 资质</span> 25%<br>
+<span class="rb8" style="padding:2px 6px;border-radius:4px">8 资质</span> 20%
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<script>
+// 格斗家数据库（拳皇真实角色）
+const fightersDB = [
+// 15 资质 - 传说
+{name:'草薙京',quality:15,icon:'🔥',skills:['百八式·暗拂','百式·鬼烧','七十五式·改','大蛇薙','无式'],baseAtk:150,baseHp:300},
+{name:'八神庵',quality:15,icon:'🌙',skills:['百八式·暗拂','百八式·八酒杯','百式·鬼烧','禁千贰百拾壹式·八稚女','里百八式·八酒杯'],baseAtk:155,baseHp:290},
+{name:'大蛇',quality:15,icon:'🌪️',skills:['黑粒子','不可触碰','掏魂','阳光普照','混'],baseAtk:160,baseHp:320},
+// 14 资质 - 史诗
+{name:'特瑞',quality:14,icon:'🧢',skills:['能量波','能量补充','火焰冲拳','能量喷泉','高轨喷泉'],baseAtk:130,baseHp:270},
+{name:'不知火舞',quality:14,icon:'🦋',skills:['花蝶扇','龙炎舞','飞翔龙炎阵','必杀忍蜂','超必杀忍蜂'],baseAtk:125,baseHp:250},
+{name:'坂崎良',quality:14,icon:'🥋',skills:['虎煌拳','极限流·虎咆','飞燕疾风脚','霸王翔吼拳','天地霸王拳'],baseAtk:128,baseHp:275},
+{name:'二阶堂红丸',quality:14,icon:'⚡',skills:['雷韧拳','飞翔脚','居合踢','雷光拳','大雷光拳'],baseAtk:120,baseHp:260},
+// 13 资质 - 稀有
+{name:'麻宫雅典娜',quality:13,icon:'🎀',skills:['精神力球','精神力反射','凤凰弹','凤凰箭','凤凰飞天'],baseAtk:110,baseHp:240},
+{name:'罗伯特',quality:13,icon:'🐉',skills:['龙击拳','龙牙','飞燕旋风脚','龙虎乱舞','霸王翔吼拳'],baseAtk:115,baseHp:250},
+{name:'大门五郎',quality:13,icon:'🥌',skills:['地雷震','超受身','天地返','岚之山','天地返·改'],baseAtk:105,baseHp:280},
+{name:'拉尔夫',quality:13,icon:'💪',skills:['机炮拳','急降下爆弹拳','超级阿根廷攻击','宇宙幻影','银河幻影'],baseAtk:112,baseHp:270},
+{name:'克拉克',quality:13,icon:'🤠',skills:['跳入攻击','弗兰肯必杀投','超级阿根廷投技','跑动投掷','终结阿根廷攻击'],baseAtk:108,baseHp:275},
+// 12 资质 - 优秀
+{name:'莉安娜',quality:12,icon:'🔪',skills:['月光锯','X 炮', '重力风暴','旋转火花','杀手钻'],baseAtk:100,baseHp:230},
+{name:'七枷社',quality:12,icon:'🌋',skills:['敲大锤','升龙决斗','干涸大地','百万大锤','末日审判'],baseAtk:105,baseHp:250},
+{name:'夏尔米',quality:12,icon:'⚡',skills:['夏尔米站立','夏尔米旋转','夏尔米重炮','雷电云','雷电拳'],baseAtk:95,baseHp:240},
+{name:'克里斯',quality:12,icon:'🔥',skills:['针刺','滑步踢','偷猎者','滑行射击','百万吨轰击'],baseAtk:98,baseHp:235},
+// 11 资质 - 良好
+{name:'矢吹真吾',quality:11,icon:'📓',skills:['百式·鬼烧·改','百八式·暗拂·改','外式·轰斧','百式·鬼烧·真','真·大蛇薙'],baseAtk:85,baseHp:210},
+{name:'玛丽',quality:11,icon:'🎱',skills:['旋转落','垂直箭头','蜘蛛固','野性之山','玛丽玫瑰'],baseAtk:82,baseHp:220},
+{name:'山崎龙二',quality:11,icon:'🔪',skills:['蛇使·上段','蛇使·中段','蛇使·下段','倍返','断头台'],baseAtk:88,baseHp:215},
+{name:'布鲁·玛丽',quality:11,icon:'🎗️',skills:['垂直箭头','旋转落','蜘蛛固','玛丽台风','玛丽玫瑰'],baseAtk:80,baseHp:225},
+// 10 资质 - 普通
+{name:'金家藩',quality:10,icon:'🥋',skills:['飞翔脚','半月斩','多拉 D 踢','凤凰脚','凤凰天舞'],baseAtk:70,baseHp:200},
+{name:'陈可汉',quality:10,icon:'⛓️',skills:['铁球飞','铁球粉碎击','铁球大回转','铁球大暴走','铁球压杀'],baseAtk:75,baseHp:220},
+{name:'蔡宝奇',quality:10,icon:'🦅',skills:['龙卷风','飞翔空裂斩','方向转换·急降下','真！超绝龙卷疾风斩','凤凰脚'],baseAtk:72,baseHp:190},
+{name:'比利',quality:10,icon:'🥢',skills:['三节棍攻击','火炎三节棍','大回转','旋元杀棍','超火炎旋风棍'],baseAtk:68,baseHp:205},
+// 9 资质
+{name:'藤堂香澄',quality:9,icon:'🌸',skills:['飞燕疾风脚','重击','烈风脚','飞燕龙炎脚','霸王翔吼拳'],baseAtk:60,baseHp:180},
+{name:'如月影二',quality:9,icon:'🥷',skills:['气功拳','影舞','胧车','暗流','霸翔'],baseAtk:62,baseHp:175},
+{name:'李香绯',quality:9,icon:'🐼',skills:['超球弹','天舞脚','大破坏投','超球弹·改','天舞脚·改'],baseAtk:58,baseHp:185},
+{name:'东丈',quality:9,icon:'🥊',skills:['低踢','滑步','飓风勾拳','虎破脚','爆烈拳'],baseAtk:65,baseHp:190},
+// 8 资质
+{name:'坂崎百合',quality:8,icon:'🌺',skills:['百合折','空牙','根付','百合乱舞','百合超必杀'],baseAtk:50,baseHp:160},
+{name:'琼',quality:8,icon:'🍸',skills:['毒蛇击','落地击','龙卷踢','幻影踢','玫瑰攻击'],baseAtk:48,baseHp:165},
+{name:'神乐千鹤',quality:8,icon:'🪶',skills:['百活·天神之理','百活·天神之舞','百活·零式之舞','神速之祝词','天瑞'],baseAtk:52,baseHp:170},
+{name:'麦卓',quality:8,icon:'💄',skills:['死亡之爪','大金属','天堂之门','血腥之镜','死亡诱惑'],baseAtk:55,baseHp:155},
+];
+
+// 游戏状态
+let game = {
+gold: 5000,
+shard: 200,
+energy: 100,
+maxEnergy: 100,
+vip: 0,
+fighters: [], // {id, name, quality, icon, skills, stars, atk, hp}
+team: [], // 出战格斗家 id 数组
+battleCount: 0,
+dailyChecked: false,
+lastCheckDate: null,
+tournaments: {street: 0, national: 0, world: 0}
+};
+
+// 获取满星上限
+function getMaxStars(quality) {
+if (quality <= 10) return 100;
+if (quality <= 13) return 150;
+if (quality === 14) return 200;
+return 300;
+}
+
+// 获取升星消耗
+function getStarCost(currentStars) {
+if (currentStars < 100) return 1000;
+if (currentStars < 200) return 5000;
+if (currentStars < 500) return 10000;
+return 50000;
+}
+
+// 获取属性成长
+function getGrowth(quality, stars) {
+const baseGrowth = {8: 5, 9: 6, 10: 7, 11: 9, 12: 11, 13: 13, 14: 16, 15: 20};
+let growth = baseGrowth[quality] || 5;
+if (stars >= 100) growth *= 2; // 100 星后翻倍
+return growth;
+}
+
+// 计算当前属性
+function calcStats(fighter) {
+const growth = getGrowth(fighter.quality, fighter.stars);
+const atk = fighter.baseAtk + fighter.stars * growth;
+const hp = fighter.baseHp + fighter.stars * growth * 2;
+return {atk, hp};
+}
+
+// 生成唯一 ID
+function generateId() {
+return 'f_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+}
+
+// 初始化
+function init() {
+loadGame();
+updateUI();
+renderFighters();
+renderTeam();
+checkDailyReset();
+}
+
+// 检查每日重置
+function checkDailyReset() {
+const today = new Date().toDateString();
+if (game.lastCheckDate !== today) {
+game.dailyChecked = false;
+game.energy = game.maxEnergy;
+}
+}
+
+// 每日签到
+function dailyCheck() {
+if (game.dailyChecked) {
+alert('今日已签到！');
+return;
+}
+game.dailyChecked = true;
+game.lastCheckDate = new Date().toDateString();
+game.gold += 500;
+game.shard += 100;
+saveGame();
+updateUI();
+alert('签到成功！获得 500 金币 +100 万能碎片');
+}
+
+// 更新 UI
+function updateUI() {
+document.getElementById('gold').textContent = game.gold;
+document.getElementById('shard').textContent = game.shard;
+document.getElementById('energy').textContent = `${game.energy}/${game.maxEnergy}`;
+document.getElementById('vip').textContent = game.vip;
+document.getElementById('btn-daily').disabled = game.dailyChecked;
+document.getElementById('btn-daily').textContent = game.dailyChecked ? '已签到' : '签到';
+
+// 首页数据
+const count = game.fighters.length;
+const totalPower = game.fighters.reduce((sum, f) => {
+const stats = calcStats(f);
+return sum + stats.atk + stats.hp;
+}, 0);
+const avgPower = count > 0 ? Math.floor(totalPower / count) : 0;
+const bestFighter = game.fighters.length > 0 ? 
+game.fighters.reduce((best, f) => {
+const stats = calcStats(f);
+const power = stats.atk + stats.hp;
+const bestStats = calcStats(best);
+const bestPower = bestStats.atk + bestStats.hp;
+return power > bestPower ? f : best;
+}) : null;
+
+document.getElementById('home-fighter-count').textContent = count;
+document.getElementById('home-avg-power').textContent = avgPower;
+document.getElementById('home-best-fighter').textContent = bestFighter ? `${bestFighter.name}(${bestFighter.stars}星)` : '-';
+}
+
+// 渲染格斗家列表
+function renderFighters(filterQuality = 'all') {
+const list = document.getElementById('fighters-list');
+let filtered = game.fighters;
+if (filterQuality !== 'all') {
+filtered = game.fighters.filter(f => f.quality === filterQuality);
+}
+
+if (filtered.length === 0) {
+list.innerHTML = '<div style="text-align:center;color:#666;padding:40px">还没有格斗家，快去召唤吧！</div>';
+return;
+}
+
+// 按资质和星级排序
+filtered.sort((a, b) => {
+if (b.quality !== a.quality) return b.quality - a.quality;
+return b.stars - a.stars;
+});
+
+list.innerHTML = filtered.map(f => {
+const stats = calcStats(f);
+const maxStars = getMaxStars(f.quality);
+const starPercent = (f.stars / maxStars) * 100;
+const power = stats.atk + stats.hp;
+const isMaxStar = f.stars >= maxStars;
+
+return `
+<div class="fc" onclick="showFighterDetail('${f.id}')">
+<div class="f-icon">${f.icon}</div>
+<div class="f-info">
+<div class="f-name">
+${f.name}
+<span class="quality-badge rb${f.quality}">${f.quality}资质</span>
+${isMaxStar ? '<span style="color:#ffd700;margin-left:5px">★MAX</span>' : ''}
+</div>
+<div class="f-stats">
+⭐ ${f.stars}/${maxStars}星 | 💪${stats.atk} | ❤️${stats.hp} | ⚡战力:${power}
+</div>
+<div class="pb"><div class="pbf rb${f.quality}" style="width:${starPercent}%"></div></div>
+</div>
+<button class="btn bpu bsm" onclick="event.stopPropagation();upgradeStar('${f.id}')">升星</button>
+</div>
+`;
+}).join('');
+}
+
+// 显示格斗家详情
+function showFighterDetail(id) {
+const fighter = game.fighters.find(f => f.id === id);
+if (!fighter) return;
+
+const stats = calcStats(fighter);
+const maxStars = getMaxStars(fighter.quality);
+const starCost = getStarCost(fighter.stars);
+const isMaxStar = fighter.stars >= maxStars;
+
+const modal = document.createElement('div');
+modal.className = 'modal-o show';
+modal.innerHTML = `
+<div class="modal">
+<h3>${fighter.icon} ${fighter.name}</h3>
+<div style="text-align:left;margin:15px 0;font-size:13px;line-height:1.8">
+<div>📊 资质：<span class="rb${fighter.quality}" style="padding:2px 8px;border-radius:4px">${fighter.quality}</span></div>
+<div>⭐ 星级：${fighter.stars}/${maxStars}</div>
+<div>💪 攻击：${stats.atk}</div>
+<div>❤️ 生命：${stats.hp}</div>
+<div>⚡ 战力：${stats.atk + stats.hp}</div>
+<div style="margin-top:10px">🎯 技能：</div>
+<div style="color:#888;font-size:12px">${fighter.skills.join(' | ')}</div>
+</div>
+${!isMaxStar ? `
+<div style="margin:15px 0;padding:10px;background:#1a1a2e;border-radius:6px">
+<div style="font-size:12px;color:#888;margin-bottom:5px">升星需要：${starCost} 万能碎片</div>
+<div style="font-size:12px;color:${game.shard >= starCost ? '#2ecc71' : '#ff4444'}">
+当前拥有：${game.shard} 碎片 ${game.shard >= starCost ? '✓' : '✗'}
+</div>
+</div>
+<button class="btn bpu bblk" onclick="upgradeStar('${fighter.id}')" ${game.shard < starCost ? 'disabled' : ''}>
+升星 (+1)
+</button>
+` : '<div style="color:#ffd700;font-weight:700">已达到满星！</div>'}
+<button class="btn bo bblk" style="margin-top:10px" onclick="this.closest('.modal-o').remove()">关闭</button>
+</div>
+`;
+document.body.appendChild(modal);
+modal.onclick = (e) => {if (e.target === modal) modal.remove();};
+}
+
+// 升星
+function upgradeStar(id) {
+const fighter = game.fighters.find(f => f.id === id);
+if (!fighter) return;
+
+const maxStars = getMaxStars(fighter.quality);
+if (fighter.stars >= maxStars) {
+alert('已达到满星！');
+return;
+}
+
+const cost = getStarCost(fighter.stars);
+if (game.shard < cost) {
+alert(`万能碎片不足！需要${cost}，当前${game.shard}`);
+return;
+}
+
+game.shard -= cost;
+fighter.stars++;
+saveGame();
+updateUI();
+renderFighters();
+showFighterDetail(id);
+
+// 特殊星级庆祝
+if ([50, 100, 150, 200].includes(fighter.stars)) {
+alert(`🎉 ${fighter.name}达到${fighter.stars}星！属性成长提升！`);
+}
+}
+
+// 渲染战队
+function renderTeam() {
+const container = document.getElementById('team-slots');
+const slots = [];
+
+for (let i = 0; i < 6; i++) {
+const fighterId = game.team[i];
+const fighter = fighterId ? game.fighters.find(f => f.id === fighterId) : null;
+
+if (fighter) {
+const stats = calcStats(fighter);
+slots.push(`
+<div class="team-slot">
+<div class="slot-num">${i + 1}</div>
+<div class="fighter-mini">
+<div class="icon">${fighter.icon}</div>
+<div class="info">
+<div class="name">${fighter.name} <span class="rb${fighter.quality}" style="padding:1px 4px;border-radius:3px;font-size:9px">${fighter.quality}</span></div>
+<div class="stats">⭐${fighter.stars} | 💪${stats.atk} | ❤️${stats.hp}</div>
+</div>
+</div>
+<button class="btn bo bsm" onclick="removeFromTeam(${i})">卸下</button>
+</div>
+`);
+} else {
+slots.push(`
+<div class="team-slot">
+<div class="slot-num">${i + 1}</div>
+<div class="fighter-mini" style="color:#666">空位</div>
+<button class="btn bp bsm" onclick="selectForTeam(${i})">选择</button>
+</div>
+`);
+}
+}
+
+container.innerHTML = slots.join('');
+
+// 计算总战力
+const totalPower = game.team.reduce((sum, id) => {
+const fighter = game.fighters.find(f => f.id === id);
+if (!fighter) return sum;
+const stats = calcStats(fighter);
+return sum + stats.atk + stats.hp;
+}, 0);
+document.getElementById('team-total-power').textContent = totalPower;
+}
+
+// 选择格斗家入队
+function selectForTeam(slotIndex) {
+if (game.fighters.length === 0) {
+alert('还没有格斗家！');
+return;
+}
+
+const modal = document.createElement('div');
+modal.className = 'modal-o show';
+modal.innerHTML = `
+<div class="modal">
+<h3>选择格斗家</h3>
+<div style="max-height:300px;overflow-y:auto;margin:15px 0">
+${game.fighters.filter(f => !game.team.includes(f.id)).map(f => {
+const stats = calcStats(f);
+return `
+<div class="fc" onclick="addToTeam(${slotIndex}, '${f.id}')">
+<div class="f-icon">${f.icon}</div>
+<div class="f-info">
+<div class="f-name">${f.name} <span class="rb${f.quality}" style="padding:1px 5px;border-radius:3px">${f.quality}</span></div>
+<div class="f-stats">⭐${f.stars} | 💪${stats.atk} | ❤️${stats.hp}</div>
+</div>
+</div>
+`;
+}).join('') || '<div style="text-align:center;color:#666;padding:20px">所有格斗家已上阵</div>'}
+</div>
+<button class="btn bo bblk" onclick="this.closest('.modal-o').remove()">关闭</button>
+</div>
+`;
+document.body.appendChild(modal);
+modal.onclick = (e) => {if (e.target === modal) modal.remove();};
+}
+
+// 添加到战队
+function addToTeam(slotIndex, fighterId) {
+game.team[slotIndex] = fighterId;
+saveGame();
+renderTeam();
+updateUI();
+// 关闭所有 modal
+document.querySelectorAll('.modal-o').forEach(m => m.remove());
+}
+
+// 从战队移除
+function removeFromTeam(slotIndex) {
+game.team[slotIndex] = null;
+saveGame();
+renderTeam();
+updateUI();
+}
+
+// 开始战斗
+function startBattle(difficulty) {
+const energyCost = [5, 10, 20][difficulty - 1];
+const goldReward = [100, 250, 600][difficulty - 1];
+const shardReward = [10, 25, 60][difficulty - 1];
+
+if (game.energy < energyCost) {
+alert('体力不足！');
+return;
+}
+
+if (game.team.length === 0 || game.team.every(id => !id)) {
+alert('请先组建战队！');
+return;
+}
+
+game.energy -= energyCost;
+game.battleCount++;
+
+// 计算战力
+const teamPower = game.team.reduce((sum, id) => {
+const fighter = game.fighters.find(f => f.id === id);
+if (!fighter) return sum;
+const stats = calcStats(fighter);
+return sum + stats.atk + stats.hp;
+}, 0);
+
+// 敌人战力（根据难度）
+const enemyPower = [800, 2000, 5000][difficulty - 1] * (1 + Math.random() * 0.3);
+
+const log = document.getElementById('battle-log');
+const win = teamPower >= enemyPower;
+
+if (win) {
+game.gold += goldReward;
+game.shard += shardReward;
+log.innerHTML += `<div class="win">⚔️ 战斗胜利！获得 ${goldReward}金币 +${shardReward}碎片</div>`;
+} else {
+log.innerHTML += `<div class="lose">💀 战斗失败！损失 ${energyCost}体力</div>`;
+}
+
+saveGame();
+updateUI();
+log.scrollTop = log.scrollHeight;
+}
+
+// 赛事战斗
+function tournamentFight(type) {
+const limits = {street: 10, national: 5, world: 3};
+const rewards = {
+street: {gold: 200, shard: 50},
+national: {gold: 500, shard: 150},
+world: {gold: 1500, shard: 500}
+};
+
+if (game.tournaments[type] >= limits[type]) {
+alert('今日参赛次数已达上限！');
+return;
+}
+
+if (game.team.length === 0 || game.team.every(id => !id)) {
+alert('请先组建战队！');
+return;
+}
+
+// 计算战力
+const teamPower = game.team.reduce((sum, id) => {
+const fighter = game.fighters.find(f => f.id === id);
+if (!fighter) return sum;
+const stats = calcStats(fighter);
+return sum + stats.atk + stats.hp;
+}, 0);
+
+// 敌人战力
+const enemyBase = {street: 1000, national: 3000, world: 8000}[type];
+const enemyPower = enemyBase * (1 + Math.random() * 0.5);
+
+const win = teamPower >= enemyPower;
+game.tournaments[type]++;
+
+if (win) {
+game.gold += rewards[type].gold;
+game.shard += rewards[type].shard;
+alert(`🏆 获胜！获得 ${rewards[type].gold}金币 +${rewards[type].shard}碎片`);
+} else {
+alert(`💀 战败！虽败犹荣，继续加油！`);
+}
+
+saveGame();
+updateUI();
+renderFighters();
+}
+
+// 召唤
+function summon(times) {
+const cost = times * 500;
+if (game.gold < cost) {
+alert('金币不足！');
+return;
+}
+
+game.gold -= cost;
+const results = [];
+
+for (let i = 0; i < times; i++) {
+const rand = Math.random() * 100;
+let quality;
+if (rand < 1) quality = 15;
+else if (rand < 4) quality = 14;
+else if (rand < 10) quality = 13;
+else if (rand < 20) quality = 12;
+else if (rand < 35) quality = 11;
+else if (rand < 55) quality = 10;
+else if (rand < 80) quality = 9;
+else quality = 8;
+
+const pool = fightersDB.filter(f => f.quality === quality);
+const baseFighter = pool[Math.floor(Math.random() * pool.length)];
+
+// 检查是否已有
+const existing = game.fighters.find(f => f.name === baseFighter.name);
+if (existing) {
+game.shard += 100; // 获得万能碎片
+results.push({type: 'shard', name: baseFighter.name, icon: baseFighter.icon, quality: baseFighter.quality});
+} else {
+// 获得新格斗家
+const newFighter = {
+id: generateId(),
+name: baseFighter.name,
+quality: baseFighter.quality,
+icon: baseFighter.icon,
+skills: [...baseFighter.skills],
+stars: 1,
+baseAtk: baseFighter.baseAtk,
+baseHp: baseFighter.baseHp
+};
+game.fighters.push(newFighter);
+results.push({type: 'fighter', ...newFighter});
+}
+}
+
+saveGame();
+updateUI();
+renderFighters();
+renderTeam();
+showSummonResult(results);
+}
+
+// 显示召唤结果
+function showSummonResult(results) {
+const modal = document.getElementById('summon-modal');
+const resultDiv = document.getElementById('summon-result');
+
+if (results.length === 1) {
+const r = results[0];
+if (r.type === 'fighter') {
+resultDiv.innerHTML = `
+<div style="font-size:40px">${r.icon}</div>
+<div style="font-size:18px;color:var(--rb${r.quality});font-weight:700;margin:10px 0">${r.name}</div>
+<div style="font-size:12px;color:#888">资质：${r.quality} | 初始星级：1</div>
+`;
+document.getElementById('summon-title').textContent = '🎉 获得新格斗家！';
+} else {
+resultDiv.innerHTML = `
+<div style="font-size:40px">${r.icon}</div>
+<div style="font-size:16px;margin:10px 0">已有 ${r.name}</div>
+<div style="font-size:14px;color:#00bfff">获得 100 万能碎片</div>
+`;
+document.getElementById('summon-title').textContent = '📦 获得碎片';
+}
+} else {
+// 十连
+let html = '<div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px">';
+results.forEach(r => {
+if (r.type === 'fighter') {
+html += `<div style="text-align:center;padding:10px;background:#1a1a2e;border-radius:8px;border:2px solid var(--rb${r.quality})">
+<div style="font-size:24px">${r.icon}</div>
+<div style="font-size:10px;color:var(--rb${r.quality});font-weight:700;margin-top:5px">${r.name}</div>
+<div style="font-size:9px;color:#888">${r.quality}资质</div>
+</div>`;
+} else {
+html += `<div style="text-align:center;padding:10px;background:#1a1a2e;border-radius:8px">
+<div style="font-size:24px">${r.icon}</div>
+<div style="font-size:10px;color:#888;margin-top:5px">${r.name}</div>
+<div style="font-size:9px;color:#00bfff">+100 碎片</div>
+</div>`;
+}
+});
+html += '</div>';
+resultDiv.innerHTML = html;
+document.getElementById('summon-title').textContent = '🎊 十连召唤结果';
+}
+
+modal.classList.add('show');
+}
+
+function closeSummon() {
+document.getElementById('summon-modal').classList.remove('show');
+}
+
+// 筛选
+function filterQuality(q) {
+renderFighters(q);
+}
+
+// 导航
+document.querySelectorAll('.nb').forEach(nb => {
+nb.onclick = () => {
+document.querySelectorAll('.nb').forEach(n => n.classList.remove('ac'));
+document.querySelectorAll('.pnl').forEach(p => p.classList.remove('ac'));
+nb.classList.add('ac');
+document.getElementById('pnl-' + nb.dataset.p).classList.add('ac');
+};
+});
+
+// 存档
+function saveGame() {
+localStorage.setItem('kof-manager-save', JSON.stringify(game));
+}
+
+function loadGame() {
+const save = localStorage.getItem('kof-manager-save');
+if (save) {
+const loaded = JSON.parse(save);
+game = {...game, ...loaded};
+}
+}
+
+// 启动
+init();
+</script>
+</body>
+</html>
